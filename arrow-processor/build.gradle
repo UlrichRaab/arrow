@@ -8,7 +8,7 @@ publish {
     groupId = 'de.ulrichraab.arrow'
     artifactId = 'arrow-processor'
     publishVersion = rootProject.ext.arrowVersionName
-    desc = 'Android library and annotation processor that makes dagger mulibinding easy'
+    desc = 'Java library and annotation processor that makes dagger mulibinding easy'
     website = 'https://github.com/UlrichRaab/arrow'
     licences = ['Apache-2.0']
     issueTracker = 'https://github.com/UlrichRaab/arrow/issues'
