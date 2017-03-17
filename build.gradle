@@ -39,6 +39,7 @@ ext {
     velocityVersion='1.7'
     espressoCoreVersion='2.2.2'
     junitVersion='4.12'
+    butterknifeVersion='8.5.1'
 }
 
 task clean(type: Delete) {
