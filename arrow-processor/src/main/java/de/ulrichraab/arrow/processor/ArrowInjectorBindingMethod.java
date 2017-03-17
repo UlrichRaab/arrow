@@ -23,6 +23,7 @@ import de.ulrichraab.arrow.ArrowInjector;
  * TODO Write documentation
  * @author Ulrich Raab
  */
+@SuppressWarnings("WeakerAccess")
 public class ArrowInjectorBindingMethod {
 
     private final String classKey;
