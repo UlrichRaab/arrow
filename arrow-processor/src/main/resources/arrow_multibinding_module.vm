@@ -1,0 +1,30 @@
+package ${packageName};
+
+import java.util.Map;
+import dagger.Binds;
+import dagger.multibindings.IntoMap;
+import dagger.Module;
+import dagger.multibindings.Multibinds;
+
+/**
+ * Add this module to your application component.
+ */
+@Module(subcomponents = {
+#foreach($arrowInjector in $arrowInjectors)
+    $arrowInjector#if( $foreach.hasNext ),#end
+#end
+})
+public abstract class ArrowMultibindingModule {
+
+    private ArrowMultibindingModule () {}
+
+    @Multibinds
+    abstract Map<Class<?>, Injector.Builder<?>> injectorBuilderProviders ();
+
+#foreach($method in $arrowInjectorBindingMethods)
+    @Binds
+    @IntoMap
+    @ClassKey(${method.classKey})
+    abstract Injector.Builder<?> ${method.name} (${method.builder} injectorBuilder);
+#end
+}

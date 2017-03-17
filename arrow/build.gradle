@@ -1,0 +1,16 @@
+apply plugin: 'java'
+
+dependencies {
+    compileOnly "com.google.dagger:dagger:$rootProject.ext.daggerVersion"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+artifacts {
+    archives sourcesJar
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
