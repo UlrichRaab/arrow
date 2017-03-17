@@ -1,8 +1,33 @@
 apply plugin: 'java'
+apply plugin: 'com.novoda.bintray-release'
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+publish {
+    groupId = 'de.ulrichraab.arrow'
+    artifactId = 'arrow-processor'
+    publishVersion = rootProject.ext.arrowVersionName
+    desc = 'Android library and annotation processor that makes dagger mulibinding easy'
+    website = 'https://github.com/UlrichRaab/arrow'
+    licences = ['Apache-2.0']
+    issueTracker = 'https://github.com/UlrichRaab/arrow/issues'
+    bintrayUser = properties.getProperty('bintray.user')
+    bintrayKey = properties.getProperty('bintray.apikey')
+    dryRun = false //  If set to true this will run everything but it won't upload the package. If false then it will upload.
+}
 
 dependencies {
     compileOnly project(':arrow')
     compile "org.apache.velocity:velocity:$rootProject.ext.velocityVersion"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+artifacts {
+    archives sourcesJar
 }
 
 sourceCompatibility = "1.7"
