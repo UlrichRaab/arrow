@@ -13,6 +13,7 @@ import dagger.multibindings.Multibinds;
 #foreach($arrowInjector in $arrowInjectors)
     $arrowInjector#if( $foreach.hasNext ),#end
 #end
+
 })
 public abstract class ArrowMultibindingModule {
 
