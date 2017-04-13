@@ -20,12 +20,12 @@ public abstract class ArrowMultibindingModule {
     private ArrowMultibindingModule () {}
 
     @Multibinds
-    abstract Map<Class<?>, Injector.Builder<?>> injectorBuilderProviders ();
+    public abstract Map<Class<?>, Injector.Builder<?>> injectorBuilderProviders ();
 
 #foreach($method in $arrowInjectorBindingMethods)
     @Binds
     @IntoMap
     @ClassKey(${method.classKey})
-    abstract Injector.Builder<?> ${method.name} (${method.builder} injectorBuilder);
+    public abstract Injector.Builder<?> ${method.name} (${method.builder} injectorBuilder);
 #end
 }
