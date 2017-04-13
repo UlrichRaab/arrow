@@ -2,8 +2,8 @@ package ${packageName};
 
 import java.util.Map;
 import dagger.Binds;
-import dagger.multibindings.IntoMap;
 import dagger.Module;
+import dagger.multibindings.IntoMap;
 import dagger.multibindings.Multibinds;
 
 /**
@@ -25,7 +25,7 @@ public abstract class ArrowMultibindingModule {
 #foreach($method in $arrowInjectorBindingMethods)
     @Binds
     @IntoMap
-    @ClassKey(${method.classKey})
+    @InjectorKey(${method.classKey})
     public abstract Injector.Builder<?> ${method.name} (${method.builder} injectorBuilder);
 #end
 }
