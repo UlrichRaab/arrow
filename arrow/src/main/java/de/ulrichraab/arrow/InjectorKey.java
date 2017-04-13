@@ -24,7 +24,7 @@ import dagger.MapKey;
  * @author Ulrich Raab
  */
 @MapKey
-@interface ClassKey {
+public @interface InjectorKey {
 
     Class<?> value ();
 }
