@@ -36,6 +36,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 
+import de.ulrichraab.arrow.ArrowMultibindingModule;
 import de.ulrichraab.arrow.ArrowInjector;
 
 
@@ -66,12 +67,17 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process (Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
+        Set<? extends Element> arrowConfigurationElements = roundEnv.getElementsAnnotatedWith(ArrowMultibindingModule.class);
+        String modulePackage = getModulePackage(arrowConfigurationElements);
+        String moduleClass = getModuleClass(arrowConfigurationElements);
+
         Set<? extends Element> arrowInjectorElements = roundEnv.getElementsAnnotatedWith(ArrowInjector.class);
         VelocityContext vc = new VelocityContext();
-        vc.put("packageName", "de.ulrichraab.arrow");
+        vc.put("packageName", modulePackage);
+        vc.put("className", moduleClass);
         vc.put("arrowInjectors", getArrowInjectors(arrowInjectorElements));
         vc.put("arrowInjectorBindingMethods", getArrowInjectorBindingMethods(arrowInjectorElements));
-        writeSourceFile(vc);
+        writeSourceFile(vc, modulePackage + "." + moduleClass);
 
         return true;
     }
@@ -88,6 +94,36 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
 
         velocityEngine = new VelocityEngine(props);
         velocityEngine.init();
+    }
+
+    private String getModulePackage (Set<? extends Element> elements) {
+
+        for (Element element : elements) {
+            ArrowMultibindingModule annotation = element.getAnnotation(ArrowMultibindingModule.class);
+            String value = annotation.value();
+            int index = value.lastIndexOf(".");
+            if (index <= 0 || index >= value.length()) {
+                continue;
+            }
+            return value.substring(0, index);
+        }
+
+        return null;
+    }
+
+    private String getModuleClass (Set<? extends Element> elements) {
+
+        for (Element element : elements) {
+            ArrowMultibindingModule annotation = element.getAnnotation(ArrowMultibindingModule.class);
+            String value = annotation.value();
+            int index = value.lastIndexOf(".");
+            if (index <= 0 || index >= value.length()) {
+                continue;
+            }
+            return value.substring(index + 1);
+        }
+
+        return null;
     }
 
     private List<String> getArrowInjectors (Set<? extends Element> elements) {
@@ -113,12 +149,12 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
         return methods;
     }
 
-
-    private void writeSourceFile (VelocityContext context) {
+    private void writeSourceFile (VelocityContext context, String sourceFileName) {
         try {
             JavaFileObject sourceFile = processingEnv
                 .getFiler()
-                .createSourceFile("de.ulrichraab.arrow.ArrowMultibindingModule");
+                .createSourceFile(sourceFileName);
+
             Writer writer = sourceFile.openWriter();
             Template vt = velocityEngine.getTemplate("arrow_multibinding_module.vm");
             vt.merge(context, writer);

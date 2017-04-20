@@ -16,6 +16,7 @@ import de.ulrichraab.arrow.ArrowMultibindingModule;
 @Singleton
 @Component(modules = {
     AppModule.class,
-    ArrowMultibindingModule.class
+    MultibindingModule.class
 })
+@ArrowMultibindingModule("de.ulrichraab.arrow.app.di.MultibindingModule")
 public interface AppComponent extends MembersInjector<Arrow> {}

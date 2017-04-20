@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.android.tools.build:gradle:2.3.1'
         classpath 'com.novoda:bintray-release:0.3.4'
         classpath 'org.ajoberstar:grgit:1.6.0'
     }
@@ -25,7 +25,7 @@ ext {
     git = Grgit.open(currentDir: projectDir)
 
     arrowVersionCode = git.head().time
-    arrowVersionName = git.describe()
+    arrowVersionName = '0.2.6'// git.describe()
 
     // sdk and tools
     minSdkVersion = 16
