@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.android.tools.build:gradle:2.3.1'
         classpath 'com.novoda:bintray-release:0.3.4'
         classpath 'org.ajoberstar:grgit:1.6.0'
     }
@@ -34,7 +34,7 @@ ext {
     buildToolsVersion = '25.0.2'
 
     // libraries
-    androidSupportVersion='25.3.0'
+    androidSupportVersion='25.3.1'
     daggerVersion='2.9'
     velocityVersion='1.7'
     espressoCoreVersion='2.2.2'

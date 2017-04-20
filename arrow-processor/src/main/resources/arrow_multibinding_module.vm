@@ -6,6 +6,9 @@ import dagger.Module;
 import dagger.multibindings.IntoMap;
 import dagger.multibindings.Multibinds;
 
+import de.ulrichraab.arrow.Injector;
+import de.ulrichraab.arrow.InjectorKey;
+
 /**
  * Add this module to your application component.
  */
@@ -15,9 +18,7 @@ import dagger.multibindings.Multibinds;
 #end
 
 })
-public abstract class ArrowMultibindingModule {
-
-    private ArrowMultibindingModule () {}
+public abstract class ${className} {
 
     @Multibinds
     public abstract Map<Class<?>, Injector.Builder<?>> injectorBuilderProviders ();
