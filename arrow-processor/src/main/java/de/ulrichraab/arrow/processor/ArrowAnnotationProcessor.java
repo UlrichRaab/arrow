@@ -69,6 +69,9 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
 
         Set<? extends Element> arrowConfigurationElements = roundEnv.getElementsAnnotatedWith(ArrowConfiguration.class);
         ModuleClass moduleClass = createModuleClass(arrowConfigurationElements);
+        if (moduleClass == null) {
+            return false;
+        }
 
         Set<? extends Element> arrowInjectorElements = roundEnv.getElementsAnnotatedWith(ArrowInjector.class);
         updateInjectorClasses(moduleClass, arrowInjectorElements);
@@ -112,10 +115,10 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
             );
         }
 
-        throw new RuntimeException("ArrowConfiguration not found or invalid");
+        return null;
     }
 
-    private void updateInjectorClasses(ModuleClass moduleClass, Set<? extends Element> elements) {
+    private void updateInjectorClasses (ModuleClass moduleClass, Set<? extends Element> elements) {
 
         for (Element element : elements) {
             String injectorClass = element.accept(new ClassNameVisitor(), null) + ".class";
@@ -125,7 +128,7 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void updateBindsInjectorBuilderMethods(ModuleClass moduleClass, Set<? extends Element> elements) {
+    private void updateBindsInjectorBuilderMethods (ModuleClass moduleClass, Set<? extends Element> elements) {
 
         for (Element element : elements) {
             ArrowInjector annotation = element.getAnnotation(ArrowInjector.class);
