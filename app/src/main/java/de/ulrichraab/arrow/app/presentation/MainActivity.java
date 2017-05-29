@@ -42,8 +42,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Inject dependencies
 
-        MainActivityInjector injector = Arrow.injector("di://main-activity", MainActivityInjector.class);
-        injector.inject(this);
+//        MainActivityInjector injector = Arrow.injector("di://main-activity", MainActivityInjector.class);
+//        injector.inject(this);
 
         Arrow.injectorBuilder("di://main-activity", MainActivityInjector.Builder.class)
              .user(new User("John Doe"))
