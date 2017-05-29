@@ -16,12 +16,11 @@ import de.ulrichraab.arrow.app.model.User;
 @Subcomponent(modules = {
     MainActivityModule.class
 })
-@ArrowInjector(
-    builder = MainActivityInjector.Builder.class,
-    target = MainActivity.class
-)
+@ArrowInjector(key = "di://main-activity", builder = MainActivityInjector.Builder.class)
 @ActivityScope
-public interface MainActivityInjector extends Injector<MainActivity> {
+public interface MainActivityInjector extends Injector {
+
+    void inject (MainActivity mainActivity);
 
     @Subcomponent.Builder
     abstract class Builder extends Injector.Builder<MainActivityInjector> {

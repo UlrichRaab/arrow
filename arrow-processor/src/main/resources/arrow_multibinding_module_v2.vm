@@ -1,0 +1,32 @@
+package ${model.packageName};
+
+import java.util.Map;
+import dagger.Binds;
+import dagger.Module;
+import dagger.multibindings.IntoMap;
+import dagger.multibindings.Multibinds;
+import dagger.multibindings.StringKey;
+
+import de.ulrichraab.arrow.Injector;
+
+/**
+ * Add this module to your application component.
+ */
+@Module(subcomponents = {
+#foreach($injectorClass in ${model.injectorClasses})
+    $injectorClass#if( $foreach.hasNext ),#end
+
+#end
+})
+public abstract class ${model.className} {
+
+    @Multibinds
+    public abstract Map<String, Injector.Builder<?>> injectorBuilders ();
+
+#foreach($method in ${model.bindsInjectorBuilderMethods})
+    @Binds
+    @IntoMap
+    @StringKey(${method.key})
+    public abstract Injector.Builder<?> ${method.name} (${method.builder} builder);
+#end
+}

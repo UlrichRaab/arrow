@@ -17,13 +17,19 @@ import de.ulrichraab.arrow.app.model.User;
 
 public class MainActivity extends AppCompatActivity {
 
-    @Inject Device device;
-    @Inject Long random;
-    @Inject User user;
+    @Inject
+    Device device;
+    @Inject
+    Long random;
+    @Inject
+    User user;
 
-    @BindView(R.id.device) TextView deviceTextView;
-    @BindView(R.id.random) TextView randomTextView;
-    @BindView(R.id.user) TextView userTextView;
+    @BindView(R.id.device)
+    TextView deviceTextView;
+    @BindView(R.id.random)
+    TextView randomTextView;
+    @BindView(R.id.user)
+    TextView userTextView;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -35,10 +41,15 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         // Inject dependencies
-        Arrow.createInjectorBuilder(this, MainActivityInjector.Builder.class)
+
+        MainActivityInjector injector = Arrow.injector("di://main-activity", MainActivityInjector.class);
+        injector.inject(this);
+
+        Arrow.injectorBuilder("di://main-activity", MainActivityInjector.Builder.class)
              .user(new User("John Doe"))
+             .mainActivityModule(new MainActivityModule())
              .build()
-             .injectMembers(this);
+             .inject(this);
     }
 
     @Override
