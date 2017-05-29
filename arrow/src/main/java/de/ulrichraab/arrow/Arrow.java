@@ -36,7 +36,7 @@ public final class Arrow {
     private static final Arrow INSTANCE = new Arrow();
 
     @Inject
-    Map<Class<?>, Provider<Injector.Builder<?>>> providers;
+    Map<String, Provider<Injector.Builder<?>>> providers;
 
     /**
      * Private constructor. Instance creation not allowed
@@ -53,20 +53,33 @@ public final class Arrow {
         injector.injectMembers(INSTANCE);
     }
 
+    @SuppressWarnings("unchecked")
+    public static <B extends Injector> B injector (String key, Class<B> injectorClass) {
+
+        Map<String, Provider<Injector.Builder<?>>> providers = INSTANCE.providers;
+        if (providers == null || providers.isEmpty()) {
+            throw new IllegalStateException("Arrow is not initialized");
+        }
+
+        Provider<Injector.Builder<?>> provider = INSTANCE.providers.get(key);
+        return injectorClass.cast(provider.get().build());
+    }
+
     /**
      * Creates a new injector builder.
-     * @param target The target in which to inject dependencies.
+     * @param key
      * @param builderClass The class of the injector builder.
      * @param <B> The concrete type of the injector builder.
      * @throws IllegalArgumentException If {@code target} or {@code builderClass} are {@code null}.
      * @throws IllegalStateException If arrow is not initialized.
      */
     @SuppressWarnings("ConstantConditions")
-    public static <B extends Injector.Builder<?>> B createInjectorBuilder (Object target, Class<B> builderClass) {
+    public static <B extends Injector.Builder<?>> B injectorBuilder (String key, Class<B> builderClass) {
+
         // Ensure arguments are not null
         List<String> missing = new ArrayList<>();
-        if (target == null) {
-            missing.add("target");
+        if (key == null || key.isEmpty()) {
+            missing.add("key");
         }
         if (builderClass == null) {
             missing.add(" builderClass");
@@ -77,13 +90,13 @@ public final class Arrow {
                 Arrays.toString(missing.toArray())
             ));
         }
-        Map<Class<?>, Provider<Injector.Builder<?>>> providers = INSTANCE.providers;
+
+        Map<String, Provider<Injector.Builder<?>>> providers = INSTANCE.providers;
         if (providers == null || providers.isEmpty()) {
             throw new IllegalStateException("Arrow is not initialized");
         }
-        Class<?> key = target.getClass();
+
         Provider<Injector.Builder<?>> provider = INSTANCE.providers.get(key);
-        Injector.Builder<?> builder = provider.get().target(target);
-        return builderClass.cast(builder);
+        return builderClass.cast(provider.get());
     }
 }

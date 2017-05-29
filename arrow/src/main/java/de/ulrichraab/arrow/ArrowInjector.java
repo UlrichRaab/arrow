@@ -23,12 +23,12 @@ package de.ulrichraab.arrow;
 public @interface ArrowInjector {
 
     /**
+     * Key of the injector.
+     */
+    String key ();
+
+    /**
      * Class of the injector builder.
      */
     Class<?> builder ();
-
-    /**
-     * Class of the target in which to inject dependencies.
-     */
-    Class<?> target ();
 }

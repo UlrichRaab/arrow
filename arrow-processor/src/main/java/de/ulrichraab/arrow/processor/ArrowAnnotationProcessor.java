@@ -23,8 +23,6 @@ import org.apache.velocity.app.VelocityEngine;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -36,8 +34,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 
-import de.ulrichraab.arrow.ArrowMultibindingModule;
+import de.ulrichraab.arrow.ArrowConfiguration;
 import de.ulrichraab.arrow.ArrowInjector;
+import de.ulrichraab.arrow.processor.model.BindsInjectorBuilderMethod;
+import de.ulrichraab.arrow.processor.model.ModuleClass;
 
 
 /**
@@ -67,17 +67,20 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process (Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
-        Set<? extends Element> arrowConfigurationElements = roundEnv.getElementsAnnotatedWith(ArrowMultibindingModule.class);
-        String modulePackage = getModulePackage(arrowConfigurationElements);
-        String moduleClass = getModuleClass(arrowConfigurationElements);
+        Set<? extends Element> arrowConfigurationElements = roundEnv.getElementsAnnotatedWith(ArrowConfiguration.class);
+        ModuleClass moduleClass = createModuleClass(arrowConfigurationElements);
+        if (moduleClass == null) {
+            return false;
+        }
 
         Set<? extends Element> arrowInjectorElements = roundEnv.getElementsAnnotatedWith(ArrowInjector.class);
+        updateInjectorClasses(moduleClass, arrowInjectorElements);
+        updateBindsInjectorBuilderMethods(moduleClass, arrowInjectorElements);
+
         VelocityContext vc = new VelocityContext();
-        vc.put("packageName", modulePackage);
-        vc.put("className", moduleClass);
-        vc.put("arrowInjectors", getArrowInjectors(arrowInjectorElements));
-        vc.put("arrowInjectorBindingMethods", getArrowInjectorBindingMethods(arrowInjectorElements));
-        writeSourceFile(vc, modulePackage + "." + moduleClass);
+        vc.put("model", moduleClass);
+
+        writeSourceFile(vc, moduleClass.getPackageName() + "." + moduleClass.getClassName());
 
         return true;
     }
@@ -96,57 +99,44 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
         velocityEngine.init();
     }
 
-    private String getModulePackage (Set<? extends Element> elements) {
+    private ModuleClass createModuleClass (Set<? extends Element> elements) {
 
         for (Element element : elements) {
-            ArrowMultibindingModule annotation = element.getAnnotation(ArrowMultibindingModule.class);
-            String value = annotation.value();
+            ArrowConfiguration annotation = element.getAnnotation(ArrowConfiguration.class);
+            String value = annotation.module();
             int index = value.lastIndexOf(".");
             if (index <= 0 || index >= value.length()) {
                 continue;
             }
-            return value.substring(0, index);
+
+            return new ModuleClass(
+                value.substring(0, index),
+                value.substring(index + 1)
+            );
         }
 
         return null;
     }
 
-    private String getModuleClass (Set<? extends Element> elements) {
+    private void updateInjectorClasses (ModuleClass moduleClass, Set<? extends Element> elements) {
 
         for (Element element : elements) {
-            ArrowMultibindingModule annotation = element.getAnnotation(ArrowMultibindingModule.class);
-            String value = annotation.value();
-            int index = value.lastIndexOf(".");
-            if (index <= 0 || index >= value.length()) {
-                continue;
+            String injectorClass = element.accept(new ClassNameVisitor(), null) + ".class";
+            if (!moduleClass.getInjectorClasses().contains(injectorClass)) {
+                moduleClass.getInjectorClasses().add(injectorClass);
             }
-            return value.substring(index + 1);
         }
-
-        return null;
     }
 
-    private List<String> getArrowInjectors (Set<? extends Element> elements) {
+    private void updateBindsInjectorBuilderMethods (ModuleClass moduleClass, Set<? extends Element> elements) {
 
-        List<String> arrowInjectors = new ArrayList<>();
-        for (Element element : elements) {
-            String arrowInjector = element.accept(new ClassNameVisitor(), null) + ".class";
-            arrowInjectors.add(arrowInjector);
-        }
-
-        return arrowInjectors;
-    }
-
-    private List<ArrowInjectorBindingMethod> getArrowInjectorBindingMethods (Set<? extends Element> elements) {
-
-        List<ArrowInjectorBindingMethod> methods = new ArrayList<>();
         for (Element element : elements) {
             ArrowInjector annotation = element.getAnnotation(ArrowInjector.class);
-            ArrowInjectorBindingMethod method = new ArrowInjectorBindingMethod(annotation);
-            methods.add(method);
+            BindsInjectorBuilderMethod method = new BindsInjectorBuilderMethod(annotation);
+            if (!moduleClass.getBindsInjectorBuilderMethods().contains(method)) {
+                moduleClass.getBindsInjectorBuilderMethods().add(method);
+            }
         }
-
-        return methods;
     }
 
     private void writeSourceFile (VelocityContext context, String sourceFileName) {
@@ -156,7 +146,7 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
                 .createSourceFile(sourceFileName);
 
             Writer writer = sourceFile.openWriter();
-            Template vt = velocityEngine.getTemplate("arrow_multibinding_module.vm");
+            Template vt = velocityEngine.getTemplate("arrow_multibinding_module_v2.vm");
             vt.merge(context, writer);
             writer.close();
         }
