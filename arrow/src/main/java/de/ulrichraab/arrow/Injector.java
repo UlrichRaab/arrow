@@ -17,20 +17,18 @@ package de.ulrichraab.arrow;
 
 
 /**
- * Performs members injection.
+ * TODO Write documentation
  * @author Ulrich Raab
  */
-public interface Injector {
+public @interface Injector {
 
     /**
-     * Builder for injectors.
-     * @param <T> The concrete injector type build by this builder.
+     * Key of the injector.
      */
-    abstract class Builder<T extends Injector> {
+    String key ();
 
-        /**
-         * Returns a newly created injector.
-         */
-        public abstract T build ();
-    }
+    /**
+     * Class of the injector builder.
+     */
+    Class<?> builder ();
 }
