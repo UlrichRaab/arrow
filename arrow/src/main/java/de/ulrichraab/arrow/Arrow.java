@@ -36,7 +36,7 @@ public final class Arrow {
     private static final Arrow INSTANCE = new Arrow();
 
     @Inject
-    Map<String, Provider<Injector.Builder<?>>> providers;
+    Map<String, Provider<InjectorBuilder<?>>> providers;
 
     /**
      * Private constructor. Instance creation not allowed
@@ -53,15 +53,15 @@ public final class Arrow {
         injector.injectMembers(INSTANCE);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <B extends Injector> B injector (String key, Class<B> injectorClass) {
 
-        Map<String, Provider<Injector.Builder<?>>> providers = INSTANCE.providers;
+    public static <B> B injector (String key, Class<B> injectorClass) {
+
+        Map<String, Provider<InjectorBuilder<?>>> providers = INSTANCE.providers;
         if (providers == null || providers.isEmpty()) {
             throw new IllegalStateException("Arrow is not initialized");
         }
 
-        Provider<Injector.Builder<?>> provider = INSTANCE.providers.get(key);
+        Provider<InjectorBuilder<?>> provider = INSTANCE.providers.get(key);
         return injectorClass.cast(provider.get().build());
     }
 
@@ -74,7 +74,7 @@ public final class Arrow {
      * @throws IllegalStateException If arrow is not initialized.
      */
     @SuppressWarnings("ConstantConditions")
-    public static <B extends Injector.Builder<?>> B injectorBuilder (String key, Class<B> builderClass) {
+    public static <B extends InjectorBuilder<?>> B injectorBuilder (String key, Class<B> builderClass) {
 
         // Ensure arguments are not null
         List<String> missing = new ArrayList<>();
@@ -91,12 +91,12 @@ public final class Arrow {
             ));
         }
 
-        Map<String, Provider<Injector.Builder<?>>> providers = INSTANCE.providers;
+        Map<String, Provider<InjectorBuilder<?>>> providers = INSTANCE.providers;
         if (providers == null || providers.isEmpty()) {
             throw new IllegalStateException("Arrow is not initialized");
         }
 
-        Provider<Injector.Builder<?>> provider = INSTANCE.providers.get(key);
+        Provider<InjectorBuilder<?>> provider = INSTANCE.providers.get(key);
         return builderClass.cast(provider.get());
     }
 }
