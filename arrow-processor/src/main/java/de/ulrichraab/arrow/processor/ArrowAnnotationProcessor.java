@@ -35,7 +35,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 
 import de.ulrichraab.arrow.ArrowConfiguration;
-import de.ulrichraab.arrow.ArrowInjector;
+import de.ulrichraab.arrow.Injector;
 import de.ulrichraab.arrow.processor.model.BindsInjectorBuilderMethod;
 import de.ulrichraab.arrow.processor.model.ModuleClass;
 
@@ -44,7 +44,7 @@ import de.ulrichraab.arrow.processor.model.ModuleClass;
  * TODO Write documentation
  * @author Ulrich Raab
  */
-@SupportedAnnotationTypes("de.ulrichraab.arrow.ArrowInjector")
+@SupportedAnnotationTypes("de.ulrichraab.arrow.Injector")
 public class ArrowAnnotationProcessor extends AbstractProcessor {
 
     private VelocityEngine velocityEngine;
@@ -73,7 +73,7 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
             return false;
         }
 
-        Set<? extends Element> arrowInjectorElements = roundEnv.getElementsAnnotatedWith(ArrowInjector.class);
+        Set<? extends Element> arrowInjectorElements = roundEnv.getElementsAnnotatedWith(Injector.class);
         updateInjectorClasses(moduleClass, arrowInjectorElements);
         updateBindsInjectorBuilderMethods(moduleClass, arrowInjectorElements);
 
@@ -131,7 +131,7 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
     private void updateBindsInjectorBuilderMethods (ModuleClass moduleClass, Set<? extends Element> elements) {
 
         for (Element element : elements) {
-            ArrowInjector annotation = element.getAnnotation(ArrowInjector.class);
+            Injector annotation = element.getAnnotation(Injector.class);
             BindsInjectorBuilderMethod method = new BindsInjectorBuilderMethod(annotation);
             if (!moduleClass.getBindsInjectorBuilderMethods().contains(method)) {
                 moduleClass.getBindsInjectorBuilderMethods().add(method);
