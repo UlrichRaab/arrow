@@ -3,7 +3,7 @@ package de.ulrichraab.arrow.processor.model;
 
 import javax.lang.model.type.MirroredTypeException;
 
-import de.ulrichraab.arrow.ArrowInjector;
+import de.ulrichraab.arrow.Injector;
 
 
 /**
@@ -16,7 +16,7 @@ public class BindsInjectorBuilderMethod {
     private String key;
     private String name;
 
-    public BindsInjectorBuilderMethod (ArrowInjector annotation) {
+    public BindsInjectorBuilderMethod (Injector annotation) {
 
         // Set builder class. !! This is a workaround !!
         // See http://stackoverflow.com/questions/7687829/java-6-annotation-processing-getting-a-class-from-an-annotation
