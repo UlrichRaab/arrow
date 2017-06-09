@@ -7,7 +7,7 @@ import dagger.multibindings.IntoMap;
 import dagger.multibindings.Multibinds;
 import dagger.multibindings.StringKey;
 
-import de.ulrichraab.arrow.Injector;
+import de.ulrichraab.arrow.InjectorBuilder;
 
 /**
  * Add this module to your application component.
@@ -21,12 +21,12 @@ import de.ulrichraab.arrow.Injector;
 public abstract class ${model.className} {
 
     @Multibinds
-    public abstract Map<String, Injector.Builder<?>> injectorBuilders ();
+    public abstract Map<String, InjectorBuilder<?>> injectorBuilders ();
 
 #foreach($method in ${model.bindsInjectorBuilderMethods})
     @Binds
     @IntoMap
     @StringKey(${method.key})
-    public abstract Injector.Builder<?> ${method.name} (${method.builder} builder);
+    public abstract InjectorBuilder<?> ${method.name} (${method.builder} builder);
 #end
 }
