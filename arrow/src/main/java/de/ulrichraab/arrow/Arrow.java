@@ -16,12 +16,10 @@
 package de.ulrichraab.arrow;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Provider;
 
 import dagger.MembersInjector;
@@ -36,7 +34,8 @@ public final class Arrow {
     private static final Arrow INSTANCE = new Arrow();
 
     @Inject
-    Map<String, Provider<Injector.Builder<?>>> providers;
+    @Named("arrow://subcomponent-builders")
+    Map<Class<?>, Provider<Object>> providers;
 
     /**
      * Private constructor. Instance creation not allowed
@@ -53,50 +52,26 @@ public final class Arrow {
         injector.injectMembers(INSTANCE);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <B extends Injector> B injector (String key, Class<B> injectorClass) {
-
-        Map<String, Provider<Injector.Builder<?>>> providers = INSTANCE.providers;
-        if (providers == null || providers.isEmpty()) {
-            throw new IllegalStateException("Arrow is not initialized");
-        }
-
-        Provider<Injector.Builder<?>> provider = INSTANCE.providers.get(key);
-        return injectorClass.cast(provider.get().build());
-    }
-
     /**
-     * Creates a new injector builder.
-     * @param key
-     * @param builderClass The class of the injector builder.
-     * @param <B> The concrete type of the injector builder.
-     * @throws IllegalArgumentException If {@code target} or {@code builderClass} are {@code null}.
+     * Returns a subcomponent builder mapped by the specified builder class.
+     * @param builderClass The class of the requested subcomponent.
+     * @param <B> The subcomponent type.
+     * @return The subcomponent mapped by the specified builder class.
+     * @throws IllegalArgumentException If {@code builderClass} is {@code null}.
      * @throws IllegalStateException If arrow is not initialized.
      */
-    @SuppressWarnings("ConstantConditions")
-    public static <B extends Injector.Builder<?>> B injectorBuilder (String key, Class<B> builderClass) {
+    public static <B> B getSubcomponentBuilder(Class<B> builderClass) {
 
-        // Ensure arguments are not null
-        List<String> missing = new ArrayList<>();
-        if (key == null || key.isEmpty()) {
-            missing.add("key");
-        }
         if (builderClass == null) {
-            missing.add(" builderClass");
-        }
-        if (!missing.isEmpty()) {
-            throw new IllegalArgumentException(String.format(
-                "Missing required arguments %1$s",
-                Arrays.toString(missing.toArray())
-            ));
+            throw new IllegalArgumentException("builderClass must be not null");
         }
 
-        Map<String, Provider<Injector.Builder<?>>> providers = INSTANCE.providers;
+        Map<Class<?>, Provider<Object>> providers = INSTANCE.providers;
         if (providers == null || providers.isEmpty()) {
             throw new IllegalStateException("Arrow is not initialized");
         }
 
-        Provider<Injector.Builder<?>> provider = INSTANCE.providers.get(key);
+        Provider<Object> provider = providers.get(builderClass);
         return builderClass.cast(provider.get());
     }
 }
