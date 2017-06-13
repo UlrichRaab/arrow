@@ -1,7 +1,6 @@
 package de.ulrichraab.arrow.processor.model;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -13,13 +12,14 @@ public class ModuleClass {
 
     private final String packageName;
     private final String className;
+    private final List<String> subcomponentClasses;
+    private final List<BindingMethod> bindingMethods;
 
-    private final List<String> injectorClasses = new ArrayList<>();
-    private final List<BindsInjectorBuilderMethod> bindsInjectorBuilderMethods = new ArrayList<>();
-
-    public ModuleClass (String packageName, String className) {
-        this.packageName = packageName;
-        this.className = className;
+    private ModuleClass (Builder builder) {
+        packageName = builder.packageName;
+        className = builder.className;
+        subcomponentClasses = builder.subcomponentClasses;
+        bindingMethods = builder.bindingMethods;
     }
 
     public String getPackageName () {
@@ -30,11 +30,49 @@ public class ModuleClass {
         return className;
     }
 
-    public List<String> getInjectorClasses () {
-        return injectorClasses;
+    public List<String> getSubcomponentClasses () {
+        return subcomponentClasses;
     }
 
-    public List<BindsInjectorBuilderMethod> getBindsInjectorBuilderMethods () {
-        return bindsInjectorBuilderMethods;
+    public List<BindingMethod> getBindingMethods () {
+        return bindingMethods;
+    }
+
+    public String getSourceFileName () {
+        return packageName + "." + className;
+    }
+
+    public static final class Builder {
+
+        private String packageName;
+        private String className;
+        private List<String> subcomponentClasses;
+        private List<BindingMethod> bindingMethods;
+
+        public Builder () {}
+
+        public Builder packageName (String packageName) {
+            this.packageName = packageName;
+            return this;
+        }
+
+        public Builder className (String className) {
+            this.className = className;
+            return this;
+        }
+
+        public Builder subcomponentClasses (List<String> subcomponentClasses) {
+            this.subcomponentClasses = subcomponentClasses;
+            return this;
+        }
+
+        public Builder bindingMethods (List<BindingMethod> bindingMethods) {
+            this.bindingMethods = bindingMethods;
+            return this;
+        }
+
+        public ModuleClass build () {
+            return new ModuleClass(this);
+        }
     }
 }
