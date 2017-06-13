@@ -23,6 +23,11 @@ import org.apache.velocity.app.VelocityEngine;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -34,9 +39,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 
+import dagger.Subcomponent;
 import de.ulrichraab.arrow.ArrowConfiguration;
-import de.ulrichraab.arrow.ArrowInjector;
-import de.ulrichraab.arrow.processor.model.BindsInjectorBuilderMethod;
+import de.ulrichraab.arrow.processor.model.BindingMethod;
 import de.ulrichraab.arrow.processor.model.ModuleClass;
 
 
@@ -44,7 +49,11 @@ import de.ulrichraab.arrow.processor.model.ModuleClass;
  * TODO Write documentation
  * @author Ulrich Raab
  */
-@SupportedAnnotationTypes("de.ulrichraab.arrow.ArrowInjector")
+@SupportedAnnotationTypes({
+    "de.ulrichraab.arrow.ArrowConfiguration",
+    "dagger.Subcomponent",
+    "dagger.Subcomponent.Builder"
+})
 public class ArrowAnnotationProcessor extends AbstractProcessor {
 
     private VelocityEngine velocityEngine;
@@ -67,22 +76,88 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process (Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
-        Set<? extends Element> arrowConfigurationElements = roundEnv.getElementsAnnotatedWith(ArrowConfiguration.class);
-        ModuleClass moduleClass = createModuleClass(arrowConfigurationElements);
-        if (moduleClass == null) {
+        ModuleClass.Builder moduleClassBuilder = createModuleClassBuilder(roundEnv);
+        if (moduleClassBuilder == null) {
             return false;
         }
 
-        Set<? extends Element> arrowInjectorElements = roundEnv.getElementsAnnotatedWith(ArrowInjector.class);
-        updateInjectorClasses(moduleClass, arrowInjectorElements);
-        updateBindsInjectorBuilderMethods(moduleClass, arrowInjectorElements);
+        List<String> subcomponentClasses = getSubcomponentClasses(roundEnv);
+        moduleClassBuilder.subcomponentClasses(subcomponentClasses);
+
+        List<BindingMethod> bindingMethods = getBindingMethods(roundEnv);
+        moduleClassBuilder.bindingMethods(bindingMethods);
+
+        ModuleClass moduleClass = moduleClassBuilder.build();
 
         VelocityContext vc = new VelocityContext();
         vc.put("model", moduleClass);
 
-        writeSourceFile(vc, moduleClass.getPackageName() + "." + moduleClass.getClassName());
+        writeSourceFile(vc, moduleClass.getSourceFileName());
 
         return true;
+    }
+
+    private ModuleClass.Builder createModuleClassBuilder (RoundEnvironment roundEnv) {
+
+        Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(ArrowConfiguration.class);
+        for (Element element : elements) {
+            ArrowConfiguration annotation = element.getAnnotation(ArrowConfiguration.class);
+            String value = annotation.module();
+            int index = value.lastIndexOf(".");
+            if (index <= 0 || index >= value.length()) {
+                continue;
+            }
+
+            return new ModuleClass.Builder()
+                .packageName(value.substring(0, index))
+                .className(value.substring(index + 1));
+        }
+
+        return null;
+    }
+
+    private List<String> getSubcomponentClasses (RoundEnvironment roundEnv) {
+
+        Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Subcomponent.class);
+        Set<String> subcomponentClasses = new HashSet<>(elements.size());
+
+        for (Element element : elements) {
+            String subcomponentClass = ElementUtils.asType(element).getQualifiedName().toString();
+            subcomponentClass = subcomponentClass + ".class";
+            subcomponentClasses.add(subcomponentClass);
+        }
+
+        // Sort the subcomponent classes for better readability of generated code
+        List<String> temp = new ArrayList<>(subcomponentClasses);
+        Collections.sort(temp);
+
+        return temp;
+    }
+
+    private List<BindingMethod> getBindingMethods (RoundEnvironment roundEnv) {
+
+        Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Subcomponent.Builder.class);
+        Set<BindingMethod> bindingMethods = new HashSet<>(elements.size());
+
+        for (Element element : elements) {
+
+            String builderClass = ElementUtils.asType(element).getQualifiedName().toString();
+            String methodName = builderClass.replaceAll("\\.", "_");
+
+            BindingMethod bindingMethod = new BindingMethod(builderClass, methodName);
+            bindingMethods.add(bindingMethod);
+        }
+
+        // Sort the binding methods for better readability of generated code
+        List<BindingMethod> temp = new ArrayList<>(bindingMethods);
+        Collections.sort(temp, new Comparator<BindingMethod>() {
+            @Override
+            public int compare (BindingMethod l, BindingMethod r) {
+                return l.getName().compareTo(r.getName());
+            }
+        });
+
+        return new ArrayList<>(bindingMethods);
     }
 
     private void initializeVelocity () throws Exception {
@@ -97,46 +172,6 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
 
         velocityEngine = new VelocityEngine(props);
         velocityEngine.init();
-    }
-
-    private ModuleClass createModuleClass (Set<? extends Element> elements) {
-
-        for (Element element : elements) {
-            ArrowConfiguration annotation = element.getAnnotation(ArrowConfiguration.class);
-            String value = annotation.module();
-            int index = value.lastIndexOf(".");
-            if (index <= 0 || index >= value.length()) {
-                continue;
-            }
-
-            return new ModuleClass(
-                value.substring(0, index),
-                value.substring(index + 1)
-            );
-        }
-
-        return null;
-    }
-
-    private void updateInjectorClasses (ModuleClass moduleClass, Set<? extends Element> elements) {
-
-        for (Element element : elements) {
-            String injectorClass = element.accept(new ClassNameVisitor(), null) + ".class";
-            if (!moduleClass.getInjectorClasses().contains(injectorClass)) {
-                moduleClass.getInjectorClasses().add(injectorClass);
-            }
-        }
-    }
-
-    private void updateBindsInjectorBuilderMethods (ModuleClass moduleClass, Set<? extends Element> elements) {
-
-        for (Element element : elements) {
-            ArrowInjector annotation = element.getAnnotation(ArrowInjector.class);
-            BindsInjectorBuilderMethod method = new BindsInjectorBuilderMethod(annotation);
-            if (!moduleClass.getBindsInjectorBuilderMethods().contains(method)) {
-                moduleClass.getBindsInjectorBuilderMethods().add(method);
-            }
-        }
     }
 
     private void writeSourceFile (VelocityContext context, String sourceFileName) {
