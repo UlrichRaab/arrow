@@ -22,6 +22,7 @@ import org.apache.velocity.app.VelocityEngine;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,31 +33,38 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 import dagger.Subcomponent;
 import de.ulrichraab.arrow.ArrowConfiguration;
 import de.ulrichraab.arrow.processor.model.BindingMethod;
 import de.ulrichraab.arrow.processor.model.ModuleClass;
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 
 
 /**
  * TODO Write documentation
  * @author Ulrich Raab
  */
-@SupportedAnnotationTypes({
-    "de.ulrichraab.arrow.ArrowConfiguration",
-    "dagger.Subcomponent",
-    "dagger.Subcomponent.Builder"
-})
 public class ArrowAnnotationProcessor extends AbstractProcessor {
 
+    private static Class<? extends Annotation> ARROW_CONFIGURATION_CLASS = ArrowConfiguration.class;
+    private static Class<? extends Annotation> SUBCOMPONENT_CLASS = Subcomponent.class;
+    private static Class<? extends Annotation> SUBCOMPONENT_BUILDER_CLASS = Subcomponent.Builder.class;
+
+    private Messager messager;
     private VelocityEngine velocityEngine;
+
+    private FastClasspathScanner fastClasspathScanner;
+    private ScanResult classpathScanResult;
 
     public ArrowAnnotationProcessor () {
         try {
@@ -66,6 +74,26 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
         catch (Exception e) {
             throw new RuntimeException("Initializing velocity failed:" + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public synchronized void init (ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+
+        messager = processingEnv.getMessager();
+        fastClasspathScanner = new FastClasspathScanner("-android");
+        classpathScanResult = fastClasspathScanner.scan();
+    }
+
+    @Override
+    public Set<String> getSupportedAnnotationTypes () {
+
+        Set<String> annotationTypes = new HashSet<>();
+        annotationTypes.add(ARROW_CONFIGURATION_CLASS.getCanonicalName());
+        annotationTypes.add(SUBCOMPONENT_CLASS.getCanonicalName());
+        annotationTypes.add(SUBCOMPONENT_BUILDER_CLASS.getCanonicalName());
+
+        return annotationTypes;
     }
 
     @Override
@@ -118,13 +146,19 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
 
     private List<String> getSubcomponentClasses (RoundEnvironment roundEnv) {
 
-        Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Subcomponent.class);
-        Set<String> subcomponentClasses = new HashSet<>(elements.size());
+        List<String> classNames = classpathScanResult.getNamesOfClassesWithAnnotation(SUBCOMPONENT_CLASS);
 
+        Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(SUBCOMPONENT_CLASS);
         for (Element element : elements) {
-            String subcomponentClass = ElementUtils.asType(element).getQualifiedName().toString();
-            subcomponentClass = subcomponentClass + ".class";
-            subcomponentClasses.add(subcomponentClass);
+            String className = ElementUtils.asType(element).getQualifiedName().toString();
+            classNames.add(className);
+        }
+
+        messager.printMessage(Diagnostic.Kind.NOTE, classNames.size() + " subcomponents found");
+
+        Set<String> subcomponentClasses = new HashSet<>();
+        for (String className : classNames) {
+            subcomponentClasses.add(className + ".class");
         }
 
         // Sort the subcomponent classes for better readability of generated code
@@ -136,9 +170,20 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
 
     private List<BindingMethod> getBindingMethods (RoundEnvironment roundEnv) {
 
-        Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Subcomponent.Builder.class);
-        Set<BindingMethod> bindingMethods = new HashSet<>(elements.size());
+        Set<BindingMethod> bindingMethods = new HashSet<>();
 
+        List<String> classNames = classpathScanResult.getNamesOfClassesWithAnnotation(SUBCOMPONENT_BUILDER_CLASS);
+        for (String className : classNames) {
+
+            String builderClass = className.replaceAll("\\$", ".");
+            String methodName = builderClass.replaceAll("\\.", "_");
+
+            BindingMethod bindingMethod = new BindingMethod(builderClass, methodName);
+            bindingMethods.add(bindingMethod);
+        }
+
+
+        Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(SUBCOMPONENT_BUILDER_CLASS);
         for (Element element : elements) {
 
             String builderClass = ElementUtils.asType(element).getQualifiedName().toString();
@@ -147,6 +192,8 @@ public class ArrowAnnotationProcessor extends AbstractProcessor {
             BindingMethod bindingMethod = new BindingMethod(builderClass, methodName);
             bindingMethods.add(bindingMethod);
         }
+
+        messager.printMessage(Diagnostic.Kind.NOTE, bindingMethods.size() + " subcomponent builders found");
 
         // Sort the binding methods for better readability of generated code
         List<BindingMethod> temp = new ArrayList<>(bindingMethods);
