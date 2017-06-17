@@ -1,8 +1,8 @@
 package de.ulrichraab.arrow.app.presentation;
 
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import javax.inject.Inject;
@@ -13,14 +13,13 @@ import de.ulrichraab.arrow.Arrow;
 import de.ulrichraab.arrow.app.R;
 import de.ulrichraab.arrow.app.model.Device;
 import de.ulrichraab.arrow.app.model.User;
+import de.ulrichraab.arrow.app.rng.Rng;
 
 
 public class MainActivity extends AppCompatActivity {
 
     @Inject
     Device device;
-    @Inject
-    Long random;
     @Inject
     User user;
 
@@ -30,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     TextView randomTextView;
     @BindView(R.id.user)
     TextView userTextView;
+
+    private final Rng rng = new Rng();
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -41,13 +42,8 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         // Inject dependencies
-
-//        MainActivityInjector injector = Arrow.injector("di://main-activity", MainActivityInjector.class);
-//        injector.inject(this);
-
-        Arrow.getSubcomponentBuilder(MainActivityInjector.Builder.class)
+        Arrow.subcomponentBuilder(MainSubcomponent.Builder.class)
              .user(new User("John Doe"))
-             .mainActivityModule(new MainActivityModule())
              .build()
              .inject(this);
     }
@@ -57,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         deviceTextView.setText(device.name());
-        randomTextView.setText(String.valueOf(random));
+        randomTextView.setText(String.valueOf(rng.generate()));
         userTextView.setText(user.name());
 
     }

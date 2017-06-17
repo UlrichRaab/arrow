@@ -60,7 +60,7 @@ public final class Arrow {
      * @throws IllegalArgumentException If {@code builderClass} is {@code null}.
      * @throws IllegalStateException If arrow is not initialized.
      */
-    public static <B> B getSubcomponentBuilder(Class<B> builderClass) {
+    public static <B> B subcomponentBuilder (Class<B> builderClass) {
 
         if (builderClass == null) {
             throw new IllegalArgumentException("builderClass must be not null");

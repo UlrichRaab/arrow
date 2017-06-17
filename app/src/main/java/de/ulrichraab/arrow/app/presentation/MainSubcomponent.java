@@ -12,8 +12,8 @@ import de.ulrichraab.arrow.app.model.User;
  * @author Ulrich Raab
  */
 @ActivityScope
-@Subcomponent(modules = {MainActivityModule.class})
-public interface MainActivityInjector {
+@Subcomponent
+public interface MainSubcomponent {
 
     void inject (MainActivity mainActivity);
 
@@ -23,8 +23,6 @@ public interface MainActivityInjector {
         @BindsInstance
         public abstract Builder user (User user);
 
-        public abstract Builder mainActivityModule (MainActivityModule module);
-
-        public abstract MainActivityInjector build();
+        public abstract MainSubcomponent build ();
     }
 }

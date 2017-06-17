@@ -30,5 +30,6 @@ public abstract class ${model.className} {
     @Named("arrow://subcomponent-builders")
     @ClassKey(${method.key})
     public abstract Object ${method.name} (${method.builder} builder);
+
 #end
 }

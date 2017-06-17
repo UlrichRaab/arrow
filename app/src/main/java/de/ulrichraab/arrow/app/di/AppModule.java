@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Build;
 import android.support.annotation.NonNull;
 
+import java.security.SecureRandom;
+
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -38,5 +40,11 @@ public class AppModule {
     Device device () {
         String deviceName = Build.MANUFACTURER + " " + Build.MODEL;
         return new Device(deviceName);
+    }
+
+    @Singleton
+    @Provides
+    SecureRandom secureRandom () {
+        return new SecureRandom();
     }
 }

@@ -40,6 +40,7 @@ ext {
     espressoCoreVersion='2.2.2'
     junitVersion='4.12'
     butterknifeVersion='8.5.1'
+    fastClasspathScannerVersion = '2.0.21'
 }
 
 task clean(type: Delete) {
