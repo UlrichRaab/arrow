@@ -23,7 +23,7 @@ class ElementUtils {
      * Returns an {@link AnnotationMirror} for the annotation of type {@code annotationClass} on
      * {@code element}, or null if no such annotation exists.
      */
-    private static AnnotationMirror getAnnotationMirror (Element element, Class<? extends Annotation> annotationClass) {
+    static AnnotationMirror getAnnotationMirror (Element element, Class<? extends Annotation> annotationClass) {
         String annotationClassName = annotationClass.getCanonicalName();
         for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
             TypeElement annotationTypeElement = asType(annotationMirror.getAnnotationType().asElement());
