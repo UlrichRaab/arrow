@@ -18,9 +18,12 @@ publish {
 }
 
 dependencies {
+
     compileOnly project(':arrow')
+
     compile "com.google.dagger:dagger:$rootProject.ext.daggerVersion"
     compile "org.apache.velocity:velocity:$rootProject.ext.velocityVersion"
+    compile "io.github.lukehutch:fast-classpath-scanner:$rootProject.ext.fastClasspathScannerVersion"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
