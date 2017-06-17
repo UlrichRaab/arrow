@@ -31,21 +31,24 @@ dependencies {
 
     compile fileTree(include: ['*.jar'], dir: 'libs')
 
+    compile project(':app-rng')
+
     compile project(':arrow')
     annotationProcessor project(':arrow-processor')
 
-    compile "com.android.support:appcompat-v7:$rootProject.ext.androidSupportVersion"
     compile "com.google.dagger:dagger:$rootProject.ext.daggerVersion"
     annotationProcessor "com.google.dagger:dagger-compiler:$rootProject.ext.daggerVersion"
+
+    compile "com.android.support:appcompat-v7:$rootProject.ext.androidSupportVersion"
 
     compile "com.jakewharton:butterknife:$rootProject.ext.butterknifeVersion"
     annotationProcessor "com.jakewharton:butterknife-compiler:$rootProject.ext.butterknifeVersion"
 
-    // Ui testing
+    // ui testing
     androidTestCompile("com.android.support.test.espresso:espresso-core:$rootProject.ext.espressoCoreVersion", {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-    // Unit testing
+    // unit testing
     testCompile "junit:junit:$rootProject.ext.junitVersion"
 }
