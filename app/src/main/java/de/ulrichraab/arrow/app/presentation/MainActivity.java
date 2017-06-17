@@ -13,6 +13,7 @@ import de.ulrichraab.arrow.Arrow;
 import de.ulrichraab.arrow.app.R;
 import de.ulrichraab.arrow.app.model.Device;
 import de.ulrichraab.arrow.app.model.User;
+import de.ulrichraab.arrow.app.rng.Rng;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -29,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.user)
     TextView userTextView;
 
-    // private Rng rng = new Rng();
+    private final Rng rng = new Rng();
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         deviceTextView.setText(device.name());
-        randomTextView.setText(String.valueOf(1));
+        randomTextView.setText(String.valueOf(rng.generate()));
         userTextView.setText(user.name());
 
     }
