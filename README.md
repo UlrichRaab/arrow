@@ -57,6 +57,11 @@ public class MyActivity extends Activity {
 }
 ```
 
+Google released a Dagger 2 android support library which also allows you 
+to easily inject dependencies into Activities, Fragments, Services, etc. 
+**Arrow is not limited to these base framework types**. 
+
+
 # Setup
 In the build.gradle of your project add:
 
