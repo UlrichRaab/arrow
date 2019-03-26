@@ -22,8 +22,8 @@ dependencies {
     implementation project(':arrow')
 
     implementation "com.google.dagger:dagger:$rootProject.ext.daggerVersion"
-    implementation "org.apache.velocity:velocity:$rootProject.ext.velocityVersion"
-    implementation "io.github.lukehutch:fast-classpath-scanner:$rootProject.ext.fastClasspathScannerVersion"
+    api "org.apache.velocity:velocity:$rootProject.ext.velocityVersion"
+    api "io.github.lukehutch:fast-classpath-scanner:$rootProject.ext.fastClasspathScannerVersion"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
