@@ -1,4 +1,4 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'com.novoda.bintray-release'
 
 Properties properties = new Properties()
@@ -18,7 +18,7 @@ publish {
 }
 
 dependencies {
-    compileOnly "com.google.dagger:dagger:$rootProject.ext.daggerVersion"
+    implementation "com.google.dagger:dagger:$rootProject.ext.daggerVersion"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
